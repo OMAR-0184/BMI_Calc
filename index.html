@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMI Calculator</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://www.transparenttextures.com/patterns/diamond-smooth.png');
+            background-color: #f5f5f5;
+            background-repeat: repeat;
+            background-attachment: fixed;
+            transition: background-color 0.3s;
+        }
+
+        .heading {
+            background-color: #1a1a1a;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .main {
+            margin-top: 10vh;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .material-icons {
+            vertical-align: middle;
+        }
+
+        .form-control {
+            border-radius: 10px;
+        }
+
+        #results {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .btn {
+            border-radius: 10px;
+            padding: 10px 20px;
+        }
+
+        .dark-mode {
+            background-color: #121212;
+        }
+
+        .light-mode {
+            background-color: bisque;
+        }
+
+        #bmi-scale {
+            position: relative;
+            height: 30px;
+            background: linear-gradient(to right, #ff4d4d, #ffcc00, #66cc66, #66ccff, #99ccff);
+            border-radius: 5px;
+            margin-top: 30px;
+        }
+
+        #bmi-indicator {
+            position: absolute;
+            height: 100%;
+            width: 5px;
+            background-color: red;
+            top: 0;
+        }
+    </style>
+</head>
+
+<body class="light-mode">
+
+    <div class="container main">
+        <div class="row justify-content-center">
+            <div class="col-md-6 form-container">
+                <div class="heading text-center mb-4">
+                    <h1>BMI CALCULATOR</h1>
+                    <button id="darkModeToggle" class="btn btn-light">
+                        <span class="material-icons">brightness_6</span> Toggle Dark Mode
+                    </button>
+                </div>
+                <form id="bmi-form">
+                    <div class="mb-3">
+                        <label for="Weight" class="form-label">Weight <span id="weight-unit">(kg) <span class="material-icons">fitness_center</span></span></label>
+                        <input type="number" class="form-control" id="Weight" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="Height" class="form-label">Height <span id="height-unit">(cm) <span class="material-icons">height</span></span></label>
+                        <input type="number" class="form-control" id="Height" required>
+                    </div>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-secondary" id="unitToggle">Switch to Imperial</button>
+                    </div>
+                    <div id="results"></div>
+                    <div id="bmi-description"></div>
+
+                    <div id="bmi-scale">
+                        <div id="bmi-indicator"></div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <span class="material-icons">calculate</span> Calculate
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap and Material UI Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const form = document.getElementById('bmi-form');
+        const results = document.getElementById('results');
+        const bmiDescription = document.getElementById('bmi-description');
+        const unitToggleButton = document.getElementById('unitToggle');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const bmiIndicator = document.getElementById('bmi-indicator');
+
+        let isMetric = true; // Metric system by default
+
+        darkModeToggle.addEventListener('click', function () {
+            document.body.classList.toggle('dark-mode');
+            document.body.classList.toggle('light-mode');
+        });
+
+        unitToggleButton.addEventListener('click', function () {
+            isMetric = !isMetric;
+            if (isMetric) {
+                unitToggleButton.textContent = 'Switch to Imperial';
+                document.getElementById('weight-unit').textContent = '(kg)';
+                document.getElementById('height-unit').textContent = '(cm)';
+            } else {
+                unitToggleButton.textContent = 'Switch to Metric';
+                document.getElementById('weight-unit').textContent = '(lbs)';
+                document.getElementById('height-unit').textContent = '(inches)';
+            }
+        });
+
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const height = parseFloat(document.getElementById('Height').value);
+            const weight = parseFloat(document.getElementById('Weight').value);
+
+            // Convert to metric if the user is using imperial
+            let heightInMeters = height;
+            let weightInKg = weight;
+
+            if (!isMetric) {
+                heightInMeters = height * 0.0254; // Convert inches to meters
+                weightInKg = weight * 0.453592; // Convert lbs to kg
+            } else {
+                heightInMeters = height / 100; // Convert cm to meters
+            }
+
+            // Validate inputs
+            results.innerHTML = '';
+            bmiDescription.innerHTML = '';
+
+            if (isNaN(heightInMeters) || heightInMeters <= 0 || isNaN(weightInKg) || weightInKg <= 0) {
+                results.innerHTML = '<div class="text-danger">Please provide valid weight and height.</div>';
+                return;
+            }
+
+            // BMI calculation
+            const bmi = (weightInKg / (heightInMeters * heightInMeters)).toFixed(2);
+
+            results.innerHTML = `<div class="text-success">Your BMI is: <span class="fw-bold">${bmi}</span></div>`;
+
+            // BMI classification description
+            let description = '';
+            let bmiPosition = 0;
+
+            if (bmi < 18.5) {
+                description = 'Underweight';
+                bmiPosition = 0;
+            } else if (bmi >= 18.5 && bmi < 24.9) {
+                description = 'Normal weight';
+                bmiPosition = 25;
+            } else if (bmi >= 25 && bmi < 29.9) {
+                description = 'Overweight';
+                bmiPosition = 50;
+            } else {
+                description = 'Obesity';
+                bmiPosition = 75;
+            }
+
+            bmiDescription.innerHTML = `<div class="text-info">BMI Category: <strong>${description}</strong></div>`;
+
+            // Update the BMI indicator position on the scale
+            bmiIndicator.style.left = `calc(${bmiPosition}% - 5px)`; // Adjust position to the scale
+        });
+    </script>
+
+</body>
+
+</html>
